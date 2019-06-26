@@ -4,7 +4,7 @@
 
 pkgname=code-git
 pkgdesc='The Open Source build of Visual Studio Code (vscode) editor - git latest'
-pkgver=1.16.0.r25714.g2328356959
+pkgver=1.16.0.r27215.g7f53e50cbf
 pkgrel=1
 arch=('i686' 'x86_64' 'armv7h')
 url='https://github.com/Microsoft/vscode'
@@ -15,13 +15,9 @@ conflicts=('visual-studio-code-git')
 provides=('visual-studio-code-git')
 
 source=("git+https://github.com/Microsoft/vscode"
-        "${pkgname}.js"
-        "${pkgname}.sh"
         "product_json.diff"
         "code-liveshare.diff")
 sha512sums=('SKIP'
-            '889ca4d4b810b4a67319cece0e1bfeae61b33905adef64f9b27152e43e112dc53a94b1875fe0a810f0d0192dec0107aed2d01c12d6a17427db4261858f96a02a'
-            '5d1cf747d365da2e12250079ba986ad5a7e70a7966900ee77a557b5989978cb24a6a8682342e87f19ffe3666d7a91bfd9004b1fc0c1da08d2ba9241e7a808ff5'
             '8ec47e497287d67f37e7b669af416f43d5cdbd4574892867d7b95996ef5de53640b5bc919b06b177e1fd91cb005579d6ed0c17325117b9914ba7cf28f5f06e40'
             '0bd10ca06dea22854e47fc45d833756ee8d7bf714c88f63feef44e0b0b5da052fba3c27d001865e3389f391cd7b888d92dc0ba44029fa5c736225da3cf2f9a46')
 
@@ -106,18 +102,20 @@ build() {
 }
 
 package() {
-    install -dm 755 "${pkgdir}/usr/lib/${pkgname}"
+    vscode_dir="${pkgdir}/usr/share/${pkgname}"
+    app_dir="${pkgdir}/usr/share/${pkgname}/resources/app"
+    install -dm 755 "${vscode_dir}"
     cp -r --no-preserve=ownership --preserve=mode \
-        VSCode-linux-${_vscode_arch}/resources/app/* \
-        "${pkgdir}/usr/lib/${pkgname}"
+        VSCode-linux-${_vscode_arch}/* \
+        "${vscode_dir}"
 
     # Replace statically included binary with system version
     ln -sf /usr/bin/rg \
-            "${pkgdir}/usr/lib/${pkgname}/node_modules.asar.unpacked/vscode-ripgrep/bin/rg"
+            "${app_dir}/node_modules.asar.unpacked/vscode-ripgrep/bin/rg"
 
     # Put the startup script in /usr/bin
-    install -Dm 755 ${pkgname}.sh "${pkgdir}/usr/bin/${pkgname}"
-    install -Dm 755 ${pkgname}.js "${pkgdir}/usr/lib/${pkgname}/${pkgname}.js"
+    install -dm 755 "${pkgdir}/usr/bin"
+    ln -sf "${vscode_dir}/bin/code-oss" "${pkgdir}/usr/bin/code"
 
     # Install appdata and desktop file
     install -Dm 644 vscode/resources/linux/code.appdata.xml \
